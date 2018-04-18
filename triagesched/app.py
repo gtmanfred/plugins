@@ -21,9 +21,7 @@ def _load_module(name):
 
 
 def create_resource(blueprint):
-    class resource(blueprint, flask_restful.Resource):
-        pass
-    return resource
+    return type(blueprint.__name__, (blueprint, flask_restful.Resource), {})
 
 def create_blueprint_app(modapp):
     app = flask.Blueprint(modapp.__name__, modapp.__name__)
