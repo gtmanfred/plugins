@@ -13,6 +13,7 @@ load_objects = (
     flask_restful,
 )
 
+
 def _load_module(name):
     module = importlib.import_module(name)
     for obj in load_objects:
@@ -23,6 +24,7 @@ def _load_module(name):
 def create_resource(blueprint):
     return type(blueprint.__name__, (blueprint, flask_restful.Resource), {})
 
+
 def create_blueprint_app(modapp):
     app = flask.Blueprint(modapp.__name__, modapp.__name__)
     api = flask_restful.Api(app)
@@ -31,14 +33,16 @@ def create_blueprint_app(modapp):
         api.add_resource(create_resource(blueprint), blueprint.uri)
     return app
 
+
 def setup_app():
     app = flask.Flask(__name__)
     with os.scandir('.') as rit:
         for entry in rit:
             if not entry.name.startswith('.') and entry.is_dir():
-                modname = entry.path[2:]
-                modapp = _load_module(f'{modname}.app')
-                app.register_blueprint(create_blueprint_app(modapp))
+                modname = f'{entry.path[2:]}.app'
+                app.register_blueprint(create_blueprint_app(_load_module(modname)))
     return app
 
-setup_app().run()
+
+if __name__ == '__main__':
+    setup_app().run()
