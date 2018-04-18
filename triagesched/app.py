@@ -38,7 +38,7 @@ def setup_app():
     app = flask.Flask(__name__)
     with os.scandir('.') as rit:
         for entry in rit:
-            if not entry.name.startswith('.') and entry.is_dir():
+            if entry.name[0] not in ('.', '_') and entry.is_dir():
                 modname = f'{entry.path[2:]}.app'
                 app.register_blueprint(create_blueprint_app(_load_module(modname)))
     return app
