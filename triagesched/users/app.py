@@ -1,5 +1,4 @@
-import flask_restful
-class Users(flask_restful.Resource):
+class Users(object):
 
     uri = '/users'
 
