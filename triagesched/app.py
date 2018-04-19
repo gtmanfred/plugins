@@ -22,6 +22,14 @@ def _load_module(name):
 
 
 def create_resource(blueprint):
+    setattr(
+        blueprint,
+        'methods',
+        list(map(
+            lambda item: item[0].upper(),
+            inspect.getmembers(blueprint, inspect.isfunction)
+        ))
+    )
     return type(blueprint.__name__, (blueprint, flask_restful.Resource), {})
 
 
