@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Import Python Libraries
-import importlib
+import importlib.util
 import inspect
 import os
 
@@ -14,8 +14,10 @@ load_objects = (
 )
 
 
-def _load_module(name):
-    module = importlib.import_module(name)
+def _load_module(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
     for obj in load_objects:
         setattr(module, f'__{obj.__name__}__', obj)
     return module
@@ -26,7 +28,7 @@ def create_resource(blueprint):
         blueprint,
         'methods',
         list(map(
-            lambda item: item[0].upper(),
+            lambda item: next(iter(item)).upper(),
             inspect.getmembers(blueprint, inspect.isfunction)
         ))
     )
@@ -46,11 +48,12 @@ def create_blueprint_app(modapp):
 def setup_app():
     app = flask.Flask(__name__)
 
-    with os.scandir('.') as rit:
+    with os.scandir(os.path.dirname(__file__)) as rit:
         for entry in rit:
             if entry.name[0] not in ('.', '_') and entry.is_dir():
-                modname = f'{entry.path[2:]}.app'
-                app.register_blueprint(create_blueprint_app(_load_module(modname)))
+                modfile = f'{entry.path}/app.py'
+                modname = f'{os.path.basename(entry.path)}.app'
+                app.register_blueprint(create_blueprint_app(_load_module(modname, modfile)))
     return app
 
 
