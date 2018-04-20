@@ -55,7 +55,13 @@ def create_blueprint_app(modapp):
 def setup_app():
     app = flask.Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
-    app.config['DEBUG'] = True
+    app.config['DEBUG'] = bool(os.environ.get('FLASK_DEBUG', False))
+
+    if app.config['DEBUG'] is True:
+        @app.route('/html/<path:path>')
+        def send_html(path):
+            return flask.send_from_directory('html', path)
+
     db = flask_sqlalchemy.SQLAlchemy(app)
 
     class User(db.Model):
@@ -86,6 +92,8 @@ def setup_app():
         for entry in rit:
             if entry.name[0] not in ('.', '_') and entry.is_dir():
                 modfile = f'{entry.path}/app.py'
+                if not os.path.isfile(modfile):
+                    continue
                 modname = f'triagesched.{os.path.basename(entry.path)}.app'
                 app.register_blueprint(create_blueprint_app(_load_module(modname, modfile)))
     return app

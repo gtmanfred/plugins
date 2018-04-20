@@ -38,4 +38,3 @@ class Triage(object):
                     ret = {'nexttriage': user.name, 'date': user.date.strftime('%A, %B %d, %Y')}
                     break
         return __flask__.jsonify(ret)
-

@@ -13,7 +13,7 @@ class User(object):
         if not user:
             return {'Error': f'Unable to find user: {userid}'}, 404
         for key, value in __flask__.request.json.items():
-            if key == 'userid':
+            if key in ('userid', 'date'):
                 continue
             setattr(user, key, value)
         __db__.session.commit()
