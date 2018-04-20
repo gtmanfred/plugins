@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
 
 # Import Python Libraries
+import datetime
 import importlib.util
 import inspect
 import os
 
+# Import Flask Libraries
 import flask
 import flask_restful
+import flask_sqlalchemy
 
-load_objects = (
+load_objects = [
     flask,
     flask_restful,
-)
+]
 
 
 def _load_module(name, path):
@@ -19,7 +22,10 @@ def _load_module(name, path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     for obj in load_objects:
-        setattr(module, f'__{obj.__name__}__', obj)
+        if isinstance(obj, tuple):
+            setattr(module, f'__{obj[0]}__', obj[1])
+        else:
+            setattr(module, f'__{obj.__name__}__', obj)
     return module
 
 
@@ -41,12 +47,29 @@ def create_blueprint_app(modapp):
     api = flask_restful.Api(app)
     for obj in inspect.getmembers(modapp, inspect.isclass):
         blueprint = obj[1]
-        api.add_resource(create_resource(blueprint), f'/api/v{version}{blueprint.uri}')
+        if hasattr(blueprint, 'uri'):
+            api.add_resource(create_resource(blueprint), f'/api/v{version}{blueprint.uri}')
     return app
 
 
 def setup_app():
     app = flask.Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+    db = flask_sqlalchemy.SQLAlchemy(app)
+
+    class User(db.Model):
+        __tablename__ = 'users'
+        userid = db.Column(db.INTEGER, primary_key=True, autoincrement=True)
+        name = db.Column(db.TEXT, nullable=False)
+        order = db.Column(db.INTEGER, nullable=False, unique=True)
+        triage = db.Column(db.BOOLEAN, nullable=False, default=False)
+        enabled = db.Column(db.BOOLEAN, nullable=False, default=True)
+        data = db.Column(db.DATETIME, default=datetime.datetime.utcnow)
+
+    db.create_all()
+
+    global load_objects
+    load_objects.extend([('user', User), ('db', db)])
 
     with os.scandir(os.path.dirname(__file__)) as rit:
         for entry in rit:
