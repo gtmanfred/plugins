@@ -54,7 +54,8 @@ def create_blueprint_app(modapp):
 
 def setup_app():
     app = flask.Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.getcwd()}/data.db'
+    database = os.environ.get('FLASK_DATABASE_URI', f'sqlite:///{os.getcwd()}/data.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = database
     app.config['DEBUG'] = bool(os.environ.get('FLASK_DEBUG', False))
 
     if app.config['DEBUG'] is True:
@@ -66,12 +67,12 @@ def setup_app():
 
     class User(db.Model):
         __tablename__ = 'users'
-        userid = db.Column(db.INTEGER, primary_key=True, autoincrement=True)
-        name = db.Column(db.TEXT, nullable=False)
-        order = db.Column(db.INTEGER, nullable=False, unique=True)
-        triage = db.Column(db.BOOLEAN, nullable=False, default=False)
-        enabled = db.Column(db.BOOLEAN, nullable=False, default=True)
-        date = db.Column(db.DATETIME, default=datetime.datetime.utcnow)
+        userid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+        name = db.Column(db.Text, nullable=False)
+        order = db.Column(db.Integer, nullable=False, unique=True)
+        triage = db.Column(db.Boolean, nullable=False, default=False)
+        enabled = db.Column(db.Boolean, nullable=False, default=True)
+        date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     db.create_all()
 
