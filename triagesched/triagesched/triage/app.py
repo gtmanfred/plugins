@@ -7,6 +7,10 @@ class Triage(object):
 
     def get(self):
         user = __user__.query.filter_by(triage=True).first()
+        if not user:
+            user = __user__.query.order_by(__user__.order).first()
+            user.triage = True
+            __db__.session.commit()
         return __flask__.jsonify({
             'triage': user.name,
             'date': user.date.strftime('%A, %B %d, %Y')

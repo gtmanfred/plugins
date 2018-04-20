@@ -54,7 +54,7 @@ def create_blueprint_app(modapp):
 
 def setup_app():
     app = flask.Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.getcwd()}/data.db'
     app.config['DEBUG'] = bool(os.environ.get('FLASK_DEBUG', False))
 
     if app.config['DEBUG'] is True:
