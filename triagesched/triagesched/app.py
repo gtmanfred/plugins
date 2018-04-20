@@ -86,7 +86,7 @@ def setup_app():
         for entry in rit:
             if entry.name[0] not in ('.', '_') and entry.is_dir():
                 modfile = f'{entry.path}/app.py'
-                modname = f'{os.path.basename(entry.path)}.app'
+                modname = f'triagesched.{os.path.basename(entry.path)}.app'
                 app.register_blueprint(create_blueprint_app(_load_module(modname, modfile)))
     return app
 
