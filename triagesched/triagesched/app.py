@@ -55,6 +55,7 @@ def create_blueprint_app(modapp):
 def setup_app():
     app = flask.Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+    app.config['DEBUG'] = True
     db = flask_sqlalchemy.SQLAlchemy(app)
 
     class User(db.Model):
@@ -64,12 +65,22 @@ def setup_app():
         order = db.Column(db.INTEGER, nullable=False, unique=True)
         triage = db.Column(db.BOOLEAN, nullable=False, default=False)
         enabled = db.Column(db.BOOLEAN, nullable=False, default=True)
-        data = db.Column(db.DATETIME, default=datetime.datetime.utcnow)
+        date = db.Column(db.DATETIME, default=datetime.datetime.utcnow)
 
     db.create_all()
 
+    def to_dict(user):
+        return {
+            'userid': user.userid,
+            'name': user.name,
+            'order': user.order,
+            'triage': user.triage,
+            'enabled': user.enabled,
+            'date': user.date,
+        }
+
     global load_objects
-    load_objects.extend([('user', User), ('db', db)])
+    load_objects.extend([('user', User), ('db', db), ('to_dict', to_dict)])
 
     with os.scandir(os.path.dirname(__file__)) as rit:
         for entry in rit:
