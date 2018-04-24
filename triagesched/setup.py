@@ -10,8 +10,10 @@ packages = ['triagesched']
 
 with os.scandir('triagesched') as rit:
     for entry in rit:
-        if entry.name[0] not in ('.', '_') and entry.is_dir() and os.path.isfile(f'{entry.path}/__init__.py'):
+        if entry.name[0] not in ('.', '_') and entry.is_dir() \
+                and os.path.isfile(f'{entry.path}/__init__.py'):
             packages.append(f'{entry.path.replace("/", ".")}')
+
 
 class InstallData(install_data):
     def run(self):
@@ -19,7 +21,10 @@ class InstallData(install_data):
         for pkgfile in self.outfiles:
             with open(pkgfile, 'r') as tmpfile:
                 filedata = tmpfile.read()
-            filedata = filedata.replace('localhost:5000', 'triage.gtmanfred.com')
+            filedata = filedata.replace(
+                'localhost:5000',
+                'triage.gtmanfred.com'
+            )
             with open(pkgfile, 'w') as tmpfile:
                 print(filedata, file=tmpfile)
 
@@ -28,6 +33,7 @@ class TriageDist(distutils.dist.Distribution):
     def __init__(self, attrs=None):
         distutils.dist.Distribution.__init__(self, attrs)
         self.cmdclass.update({'install_data': InstallData})
+
 
 setup(
     distclass=TriageDist,
