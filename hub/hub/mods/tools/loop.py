@@ -27,7 +27,7 @@ def call_soon(hub, fun, *args, **kwargs):
     Schedule a coroutine to be called when the loop has time. This needs
     to be called after the creation fo the loop
     '''
-    hub.tools._loop.call_soon(functools.partial(fun, *args, **kwargs))
+    hub._._.call_soon(functools.partial(fun, *args, **kwargs))
 
 
 def ensure_future(hub, fun, *args, **kwargs):
@@ -42,11 +42,15 @@ def entry(hub):
     '''
     The entry coroutine to start a run forever loop
     '''
-    hub.tools._loop.run_forever()
+    hub._._.create().run_forever()
+
+
+def close(hub):
+    hub._._.create().close()
 
 
 def start(hub, fun, *args, **kwargs):
     '''
     Start a loop that will run until complete
     '''
-    return hub.tools.loop.create().run_until_complete(fun(*args, **kwargs))
+    return hub._._.create().run_until_complete(fun(*args, **kwargs))
