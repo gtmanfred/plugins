@@ -22,7 +22,12 @@ def load_virtual(parent, virtual, mod, bname):
     if not hasattr(mod, '__virtual__'):
         return {'name': name}
 
-    vret, vmsg = mod.__virtual__(parent)
+    ret = mod.__virtual__(parent)
+
+    if isinstance(ret, tuple):
+        vret, vmsg = ret
+    else:
+        vret, vmsg = ret, f'Failed to load {mod.__name__}'
 
     if vret is True:
         return {'name': name}

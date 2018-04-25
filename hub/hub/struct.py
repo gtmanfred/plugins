@@ -61,6 +61,7 @@ class Pack(object):
         self._recurse = recurse
         self._loaded_all = False
         self._loaded = {}
+        self._vmap = {}
         self._load_errors = {}
         self._mod_basename = mod_basename
         self.__prepare__()
@@ -87,6 +88,12 @@ class Pack(object):
             self._load_item(bname)
         self._loaded_all = True
 
+    @property
+    def _(self):
+        fn = inspect.stack()[1].filename
+        vname = self._vmap[fn]
+        return getattr(self, vname.split('.')[-1])
+
     def __getattr__(self, item):
         if item.startswith('_'):
             return self.__getattribute__(item)
@@ -105,6 +112,7 @@ class Pack(object):
             if func_name.startswith('_'):
                 continue
             setattr(mod, func_name, Wrapper(self._parent, func))
+        self._vmap[mod.__file__] = mod.__name__
         return mod
 
     def _find_mod(self, item):
