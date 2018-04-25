@@ -15,9 +15,10 @@ def scan(directories, recurse=False):
     ret = collections.OrderedDict()
     for dir_ in directories:
         if recurse:
-            for dir_, _, files in os.walk(dir_):
+            for dir_, dirs_, files in os.walk(dir_):
                 for fn_ in files:
                     _apply_scan(ret, dir_, fn_)
+            ret.update(scan(dirs_, recurse=True))
         else:
             for fn_ in os.listdir(dir_):
                 _apply_scan(ret, dir_, fn_)

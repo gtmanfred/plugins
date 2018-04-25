@@ -4,24 +4,26 @@
 import collections
 import inspect
 import os
-import types
 
 # Import Hub Libs
 import hub.dirs
+import hub.exc
 import hub.loader
 import hub.scanner
 
 
 class Hub(object):
+    context = {}
+
     def __init__(self):
         self._subs = collections.OrderedDict()
-        self._add_system('tools', pypath='hub.mods.tools')
+        self._add_subsystem('tools', pypath='hub.mods.tools')
 
-    def _add_system(self, modname, subname=None, pypath=None, virtual=True, recurse=False, mod_basename='hub.pack'):
+    def _add_subsystem(self, modname, subname=None, pypath=None, virtual=True, recurse=False, mod_basename='hub.pack'):
         subname = subname if subname else modname
         self._subs[modname] = Pack(self, modname, subname, pypath, virtual, recurse)
 
-    def _remove_system(self, subname):
+    def _remove_subsystem(self, subname):
         if subname in self._systems:
             self._subs.pop(subname)
             return True
@@ -33,6 +35,19 @@ class Hub(object):
         if item in self._subs:
             return self._subs[item]
         return self.__getattribute__(item)
+
+    @property
+    def _(self):
+        '''
+        This function allows for hub to pack introspective calls.
+        This should only ever be called from within a hub module, otherwise
+        it should stack trace, or return heaven knows what...
+        '''
+        dirname = os.path.dirname(inspect.stack()[1].filename)
+        for sub in self._subs:
+            if dirname in self._subs[sub]._dirs:
+                return self._subs[sub]
+        raise hub.exc.PackLookupError('Called from outside a hub!')
 
 
 class Pack(object):
@@ -79,13 +94,18 @@ class Pack(object):
             return self._loaded[item]
         return self._find_mod(item)
 
+    def __contains__(self, item):
+        try:
+            return hasattr(self, item)
+        except hub.exc.PackLookupError:
+            return False
+
     def _apply_wrapper(self, mod):
-        ret = types.SimpleNamespace()
         for func_name, func in inspect.getmembers(mod, inspect.isfunction):
             if func_name.startswith('_'):
                 continue
-            setattr(ret, func_name, Wrapper(self._parent, func))
-        return ret
+            setattr(mod, func_name, Wrapper(self._parent, func))
+        return mod
 
     def _find_mod(self, item):
         '''
@@ -100,7 +120,7 @@ class Pack(object):
         # Let's see if the module being lookup is in the load errors dictionary
         if item in self._load_errors:
             # Return the LoadError
-            return self._load_errors[item]
+            raise hub.exc.PackLoadError(self._load_errors[item])
 
     def _load_item(self, bname):
         mname = f'{self.__name__}.{os.path.basename(bname).split(".")[0]}'
