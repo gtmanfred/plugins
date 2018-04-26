@@ -51,7 +51,4 @@ def web(hub, mods, prefix='', static=None, staticpath=None, listen_ip='127.0.0.1
     except KeyboardInterrupt:
         pass
     finally:
-        hub.tools.loop.start(handler.finish_connections, 1.0)
         srv.close()
-        hub.tools.loop.start(srv.wait_closed())
-        hub.tools.loop.start(app.finish())
