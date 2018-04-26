@@ -8,7 +8,7 @@ import sqlalchemy.schema
 async def setupdb(hub, dburi, debug=False):
     engine = sqlalchemy.create_engine(dburi, strategy=sqlalchemy_aio.ASYNCIO_STRATEGY)
 
-    metadata = sqlalchemy.MetaData()
+    metadata = sqlalchemy.MetaData(engine)
 
     hub.triagedb._users = sqlalchemy.Table(
         'users', metadata,
@@ -20,7 +20,9 @@ async def setupdb(hub, dburi, debug=False):
         sqlalchemy.Column('date', sqlalchemy.DateTime, default=datetime.datetime.utcnow),
     )
 
-    # await engine.execute(sqlalchemy.schema.CreateTable(hub.triagedb._users))
+    test = await engine.has_table('users')
+    if not test:
+        await engine.execute(sqlalchemy.schema.CreateTable(hub.triagedb._users))
     hub.triagedb._conn = await engine.connect()
 
 
