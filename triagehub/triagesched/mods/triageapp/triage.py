@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import aiohttp.web
 import datetime
+
+
+def __virtual__(hub):
+    if 'aio' not in hub:
+        return False, 'Load the `hub.mods.aio` pack'
+    if 'http' not in hub.aio:
+        return False, '`hub.aio.http` is not available: install `aiohttp`'
+    return True
 
 
 def uri(hub):
@@ -11,13 +18,13 @@ def uri(hub):
 async def get(hub, request):
     conn = hub.triagedb._conn
     users = hub.triagedb._users
-    result = await conn.execute(users.select(users.c.enabled is True))
+    result = await conn.execute(users.select(users.c.triage))
     user = await result.fetchone()
     if not user:
-        result = await conn.execute(users.select(True).order_by(users.c.order))
+        result = await conn.execute(users.select(users.c.enabled).order_by(users.c.order))
         user = await result.fetchone()
         await conn.execute(users.update().where(users.c.userid == user.userid).values(triage=True))
-    return aiohttp.web.json_response({
+    return hub.aio.http.json_response({
         'triage': user.name,
         'date': user.date.strftime('%A, %B %d, %Y')
     })
@@ -30,10 +37,10 @@ async def put(hub, request):
     retusers = await result.fetchall()
     nextuser = False
     for user in retusers:
-        if user.triage is True:
+        if user.triage:
             await conn.execute(users.update().where(users.c.userid == user.userid).values(triage=False))
             nextuser = True
-        elif user.enabled == 0:
+        elif not user.enabled:
             continue
         elif nextuser is True:
             newdate = datetime.datetime.utcnow()
@@ -46,7 +53,7 @@ async def put(hub, request):
             break
     if nextuser is True:
         for user in retusers:
-            if user.enabled == 1:
+            if user.enabled:
                 newdate = datetime.datetime.utcnow()
                 await conn.execute(users.update().where(users.c.userid == user.userid).values(
                     triage=True,
@@ -54,4 +61,4 @@ async def put(hub, request):
                 ))
                 ret = {'nexttriage': user.name, 'date': newdate.strftime('%A, %B %d, %Y')}
                 break
-    return aiohttp.web.json_response(ret)
+    return hub.aio.http.json_response(ret)

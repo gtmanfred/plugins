@@ -24,6 +24,10 @@ async def query(hub, url, method='GET', data=None, headers=None):
             return ret.strip()
 
 
+def json_response(hub, data, status=200):
+    return aiohttp.web.json_response(data, status=status)
+
+
 def web(hub, mods, prefix='', static=None, staticpath=None, listen_ip='127.0.0.1', listen_port='5000'):
     app = aiohttp.web.Application()
     for modname in mods:

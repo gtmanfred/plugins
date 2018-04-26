@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import aiohttp.web
+
+def __virtual__(hub):
+    if 'aio' not in hub:
+        return False, 'Load the `hub.mods.aio` pack'
+    if 'http' not in hub.aio:
+        return False, '`hub.aio.http` is not available: install `aiohttp`'
+    return True
 
 
 def uri(hub):
@@ -16,8 +22,8 @@ async def get(hub, request):
         result = await conn.execute(users.select(True))
     retusers = await result.fetchall()
     if not retusers:
-        return aiohttp.web.json_response({'Error': 'No users defined'}, status=404)
-    return aiohttp.web.json_response({'users': [hub.triagedb.db.to_dict(user) for user in retusers]})
+        return hub.aio.http.json_response({'Error': 'No users defined'}, status=404)
+    return hub.aio.http.json_response({'users': [hub.triagedb.db.to_dict(user) for user in retusers]})
 
 
 async def post(hub, request):
@@ -27,4 +33,4 @@ async def post(hub, request):
     name = data['name']
     order = data['order']
     await conn.execute(users.insert().values(name=name, order=order))
-    return aiohttp.web.json_response({'message': 'success'})
+    return hub.aio.http.json_response({'message': 'success'})

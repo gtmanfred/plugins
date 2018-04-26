@@ -36,6 +36,9 @@ class Hub(object):
             return self._subs[item]
         return self.__getattribute__(item)
 
+    def __iter__(self):
+        return iter(self._subs.keys())
+
     @property
     def _(self):
         '''
