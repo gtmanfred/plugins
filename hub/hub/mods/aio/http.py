@@ -24,15 +24,19 @@ async def query(hub, url, method='GET', data=None, headers=None):
             return ret.strip()
 
 
-def web(hub, mods, listen_ip='127.0.0.1', listen_port='5000'):
+def web(hub, mods, prefix='', static=None, staticpath=None, listen_ip='127.0.0.1', listen_port='5000'):
     app = aiohttp.web.Application()
     for modname in mods:
         if isinstance(mods, dict):
             hub.tools.pack.add(modname, pypath=mods[modname])
-        for module in getattr(hub, 'modname'):
+        for module in getattr(hub, modname):
             for method in ['get', 'post', 'put', 'delete', 'options', 'head', 'connect']:
                 if hasattr(module, method) and hasattr(module, 'uri'):
-                    app.router.add_route(method.upper(), module.uri(), getattr(module, method))
+                    app.router.add_route(method.upper(), f'{prefix}{module.uri()}', getattr(module, method))
+    if static is not None:
+        if staticpath is None:
+            staticpath = '/static/'
+        app.router.add_static(staticpath, path=static, name='static')
     handler = app.make_handler()
     loop = hub.tools.loop.create()
     f = loop.create_server(handler, '0.0.0.0', 5000)
