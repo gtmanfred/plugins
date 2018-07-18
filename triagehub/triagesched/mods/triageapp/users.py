@@ -14,12 +14,11 @@ def uri(hub):
 
 
 async def get(hub, request):
-    conn = hub.triagedb._conn
-    users = hub.triagedb._users
+    users = hub.triagedb.db.users()
     if 'enabled' in request.rel_url.query:
-        result = await conn.execute(users.select(users.c.enabled == 1))
+        result = await hub.triagedb.db.execute(users.select(users.c.enabled == 1))
     else:
-        result = await conn.execute(users.select(True))
+        result = await hub.triagedb.db.execute(users.select(True))
     retusers = await result.fetchall()
     if not retusers:
         return hub.aio.http.json_response({'Error': 'No users defined'}, status=404)
@@ -27,10 +26,9 @@ async def get(hub, request):
 
 
 async def post(hub, request):
-    conn = hub.triagedb._conn
-    users = hub.triagedb._users
+    users = hub.triagedb.db.users()
     data = await request.json()
     name = data['name']
     order = data['order']
-    await conn.execute(users.insert().values(name=name, order=order))
+    await hub.triagedb.db.execute(users.insert().values(name=name, order=order))
     return hub.aio.http.json_response({'message': 'success'})

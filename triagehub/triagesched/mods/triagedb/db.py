@@ -10,7 +10,7 @@ async def setupdb(hub, dburi, debug=False):
 
     metadata = sqlalchemy.MetaData(engine)
 
-    hub.triagedb._users = sqlalchemy.Table(
+    hub._._users = sqlalchemy.Table(
         'users', metadata,
         sqlalchemy.Column('userid', sqlalchemy.Integer, primary_key=True, autoincrement=True),
         sqlalchemy.Column('name', sqlalchemy.Text, nullable=False),
@@ -22,8 +22,16 @@ async def setupdb(hub, dburi, debug=False):
 
     test = await engine.has_table('users')
     if not test:
-        await engine.execute(sqlalchemy.schema.CreateTable(hub.triagedb._users))
+        await engine.execute(sqlalchemy.schema.CreateTable(hub._._users))
     hub.triagedb._conn = await engine.connect()
+
+
+def users(hub):
+    return hub._._users
+
+
+async def execute(hub, query):
+    return await hub._._conn.execute(query)
 
 
 def to_dict(hub, user):

@@ -16,14 +16,13 @@ def uri(hub):
 
 
 async def get(hub, request):
-    conn = hub.triagedb._conn
-    users = hub.triagedb._users
-    result = await conn.execute(users.select(users.c.triage))
+    users = hub.triagedb.db.users()
+    result = await hub.triagedb.db.execute(users.select(users.c.triage))
     user = await result.fetchone()
     if not user:
-        result = await conn.execute(users.select(users.c.enabled).order_by(users.c.order))
+        result = await hub.triagedb.db.execute(users.select(users.c.enabled).order_by(users.c.order))
         user = await result.fetchone()
-        await conn.execute(users.update().where(users.c.userid == user.userid).values(triage=True))
+        await hub.triagedb.db.execute(users.update().where(users.c.userid == user.userid).values(triage=True))
     return hub.aio.http.json_response({
         'triage': user.name,
         'date': user.date.strftime('%A, %B %d, %Y')
@@ -31,20 +30,19 @@ async def get(hub, request):
 
 
 async def put(hub, request):
-    conn = hub.triagedb._conn
-    users = hub.triagedb._users
-    result = await conn.execute(users.select(True).order_by(users.c.order))
+    users = hub.triagedb.db.users()
+    result = await hub.triagedb.db.execute(users.select(True).order_by(users.c.order))
     retusers = await result.fetchall()
     nextuser = False
     for user in retusers:
         if user.triage:
-            await conn.execute(users.update().where(users.c.userid == user.userid).values(triage=False))
+            await hub.triagedb.db.execute(users.update().where(users.c.userid == user.userid).values(triage=False))
             nextuser = True
         elif not user.enabled:
             continue
         elif nextuser is True:
             newdate = datetime.datetime.utcnow()
-            await conn.execute(users.update().where(users.c.userid == user.userid).values(
+            await hub.triagedb.db.execute(users.update().where(users.c.userid == user.userid).values(
                 triage=True,
                 date=newdate,
             ))
@@ -55,7 +53,7 @@ async def put(hub, request):
         for user in retusers:
             if user.enabled:
                 newdate = datetime.datetime.utcnow()
-                await conn.execute(users.update().where(users.c.userid == user.userid).values(
+                await hub.triagedb.db.execute(users.update().where(users.c.userid == user.userid).values(
                     triage=True,
                     date=newdate
                 ))
