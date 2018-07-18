@@ -39,7 +39,7 @@
         </div>
         <div class="form-group">
           <label class="col-sm-2 control-label">Order</label>
-          <div v-if="error" class="alert alert-danger">
+          <div v-if="error" style="width:20%;" class="alert alert-danger">
             <strong>Error!</strong> {{error}}
           </div>
           <div class="col-sm-10">
@@ -69,13 +69,15 @@
                 "name": this.$refs.name.value,
                 "order": this.$refs.order.value
               }
+              event.preventDefault();
               if (!/^\d+$/.test(this.$refs.order.value)) {
                 this.error = `Order is not a number: ${this.$refs.order.value}`;
               } else {
-                this.$http.post("http://localhost:5000/api/v1/users", user).then(this.getUsers);
+                this.$http.post("http://localhost:5000/api/v1/users", user).then(function() {
+                  this.getUsers();
+                  event.target.reset();
+                });
               }
-              event.target.reset()
-              event.preventDefault();
             },
             getUsers: function() {
               this.$http.get('http://localhost:5000/api/v1/users').then(response => {
