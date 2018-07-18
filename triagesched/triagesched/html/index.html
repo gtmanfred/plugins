@@ -2,28 +2,35 @@
 <html>
   <head>
     <title>Who is doing triage today?</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
-    <script>
-      var app = angular.module('Triage', []);
-      app.controller('Ctrl', function($scope, $http) {
-        $http.get("http://localhost:5000/api/v1/triage").then(function(response) {
-          $scope.triage = response.data.triage
-          $scope.date = response.data.date
-        })
-      });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
   </head>
   <body bgcolor="#FFFFFF">
-    <div ng-app="Triage" ng-controller="Ctrl">
+    <div id="app">
       <table border=0 width=100% height=100%>
         <tr>
           <td align=center>
-              <font size="7">{{triage}}</font><br><br>
+              <font size="7">{{name}}</font><br><br>
               <font size="-1">{{date}}</font>
           </td>
         </tr>
       </table>
     </div>
+    <script>
+      Vue.use(VueResource)
+      new Vue({
+          el: '#app',
+          data: {
+              name: null,
+              date: null,
+          },
+          mounted: function() {
+              this.$http.get('http://localhost:5000/api/v1/triage').then(response => {
+                  this.name = response.data.triage;
+                  this.date = response.data.date;
+              })
+          }
+      })
+    </script>
   </body>
 </html>
-
