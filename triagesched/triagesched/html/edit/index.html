@@ -30,11 +30,24 @@
       </table>
       </fieldset>
       <button class="btn btn-dark" v-on:click="updateUsers()">Update</button>
-      <div class="form">
-          <label>Name</label><input type="text" placeholder="Enter Name" ref="name" required/><br>
-          <label>Order</label><input type="text" placeholder="Enter Order" ref="order" required/><br>
-          <button class="btn btn-dark" v-on:click="submitNewUser()">Submit</button>
-      </div>
+      <form class="form-horizontal" v-on:submit="submitNewUser">
+        <div class="form-group">
+          <label class="col-sm-2 control-label">Name</label>
+          <div class="col-sm-10">
+            <input type="text" style="width:20%;" placeholder="Enter Name" ref="name" required/><br>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-2 control-label">Order</label>
+          <div v-if="error" class="alert alert-danger">
+            <strong>Error!</strong> {{error}}
+          </div>
+          <div class="col-sm-10">
+            <input type="text" v-bind:class="orderClass" style="width:20%;" placeholder="Enter Order" ref="order" required/>
+          </div>
+        </div>
+        <button class="btn btn-dark">Submit</button>
+      </form>
     </div>
     <script>
         Vue.use(VueResource)
@@ -42,20 +55,27 @@
           el: '#app',
           data: {
             users: [],
+            error: null
           },
           methods: {
             updateUsers: function() {
               for (user in this.users) {
-                this.$http.put("http://localhost:5000/api/v1/user/" + this.users[user].userid, this.users[user])
+                this.$http.put(`http://localhost:5000/api/v1/user/${this.users[user].userid}`, this.users[user])
               };
               this.getUsers();
             },
-            submitNewUser: function() {
+            submitNewUser: function(event) {
               let user = {
                 "name": this.$refs.name.value,
                 "order": this.$refs.order.value
               }
-              this.$http.post("http://localhost:5000/api/v1/users", user);
+              if (!/^\d+$/.test(this.$refs.order.value)) {
+                this.error = `Order is not a number: ${this.$refs.order.value}`;
+              } else {
+                this.$http.post("http://localhost:5000/api/v1/users", user).then(this.getUsers);
+              }
+              event.target.reset()
+              event.preventDefault();
             },
             getUsers: function() {
               this.$http.get('http://localhost:5000/api/v1/users').then(response => {
@@ -63,14 +83,21 @@
               });
             },
             deleteUser: function(userid) {
-              this.$http.delete("http://localhost:5000/api/v1/users/" + userid).then(this.getUsers)
+              this.$http.delete(`http://localhost:5000/api/v1/users/${userid}`).then(this.getUsers)
+            },
+          },
+          computed: {
+            orderClass: function() {
+              if (this.error) {
+                return {'form-control': true, 'is-invalid': true}
+              }
+              return {}
             }
           },
-          mounted: function() {
+          created: function() {
             this.getUsers();
           },
         });
       </script>
   </body>
 </html>
-
