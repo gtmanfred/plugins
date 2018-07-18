@@ -67,6 +67,7 @@ def setup_app():
     def apply_caching(response):
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS, HEAD, PUT, DELETE'
         return response
 
     db = flask_sqlalchemy.SQLAlchemy(app)
