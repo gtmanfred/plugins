@@ -4,6 +4,7 @@
     <title>Who is doing triage today?</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
   </head>
   <body bgcolor="#FFFFFF">
     <div id="app">
@@ -26,11 +27,11 @@
         </tbody>
       </table>
       </fieldset>
-      <button v-on:click="updateUsers()">Save</button>
-      <div name="newuser">
+      <button class="btn btn-dark" v-on:click="updateUsers()">Update</button>
+      <div class="form" name="newuser">
           <label>Name</label><input type="text" v-model="newuser.name" placeholder="Enter Name" required/><br>
           <label>Order</label><input type="text" v-model="newuser.order" placeholder="Enter Order" required/><br>
-          <button v-on:click="submitNewUser()">Save</button>
+          <button class="btn btn-dark" v-on:click="submitNewUser()">Submit</button>
       </div>
     </div>
     <script>
