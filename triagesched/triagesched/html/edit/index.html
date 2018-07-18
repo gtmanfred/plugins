@@ -28,9 +28,9 @@
       </table>
       </fieldset>
       <button class="btn btn-dark" v-on:click="updateUsers()">Update</button>
-      <div class="form" name="newuser">
-          <label>Name</label><input type="text" v-model="newuser.name" placeholder="Enter Name" required/><br>
-          <label>Order</label><input type="text" v-model="newuser.order" placeholder="Enter Order" required/><br>
+      <div class="form">
+          <label>Name</label><input type="text" placeholder="Enter Name" ref="name" required/><br>
+          <label>Order</label><input type="text" placeholder="Enter Order" ref="order" required/><br>
           <button class="btn btn-dark" v-on:click="submitNewUser()">Submit</button>
       </div>
     </div>
@@ -40,7 +40,6 @@
           el: '#app',
           data: {
             users: [],
-            newuser: {},
           },
           methods: {
             updateUsers: function() {
@@ -50,7 +49,11 @@
               this.getUsers();
             },
             submitNewUser: function() {
-              this.$http.post("http://localhost:5000/api/v1/users", this.newuser);
+              let user = {
+                "name": this.$refs.name.value,
+                "order": this.$refs.order.value
+              }
+              this.$http.post("http://localhost:5000/api/v1/users", user);
             },
             getUsers: function() {
               this.$http.get('http://localhost:5000/api/v1/users').then(response => {

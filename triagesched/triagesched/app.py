@@ -63,6 +63,12 @@ def setup_app():
         def send_html(path):
             return flask.send_from_directory('html', path)
 
+    @app.after_request
+    def apply_caching(response):
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return response
+
     db = flask_sqlalchemy.SQLAlchemy(app)
 
     class User(db.Model):
