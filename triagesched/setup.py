@@ -23,7 +23,7 @@ class InstallData(install_data):
                 filedata = tmpfile.read()
             filedata = filedata.replace(
                 'localhost:5000',
-                'triage.gtmanfred.com'
+                'triage.saltstack.com'
             )
             with open(pkgfile, 'w') as tmpfile:
                 print(filedata, file=tmpfile)
