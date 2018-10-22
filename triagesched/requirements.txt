@@ -1,3 +1,4 @@
 flask
 flask-RESTful
 flask-SQLAlchemy
+psycopg2-binary
