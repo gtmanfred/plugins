@@ -7,13 +7,21 @@ class Triage(object):
 
     def get(self):
         user = __user__.query.filter_by(triage=True).first()
+        users = __user__.query.filter_by(enabled=1).order_by(__user__.order).all()
         if not user:
             user = __user__.query.order_by(__user__.order).first()
             user.triage = True
             __db__.session.commit()
+        for n, a in enumerate(users):
+            if a.triage:
+                if n >= len(users) - 1:
+                    next_user = users[0]
+                else:
+                    next_user = users[n + 1]
         return __flask__.jsonify({
             'triage': user.name,
-            'date': user.date.strftime('%A, %B %d, %Y')
+            'date': user.date.strftime('%A, %B %d, %Y'),
+            'next_user': next_user.name,
         })
 
     def put(self):

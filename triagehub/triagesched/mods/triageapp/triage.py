@@ -23,9 +23,18 @@ async def get(hub, request):
         result = await hub.triagedb.db.execute(users.select(users.c.enabled).order_by(users.c.order))
         user = await result.fetchone()
         await hub.triagedb.db.execute(users.update().where(users.c.userid == user.userid).values(triage=True))
+    result = await hub.triagedb.db.execute(users.select(users.c.enabled).order_by(users.c.order))
+    all_users = await result.fetchall()
+    for n, a in enumerate(all_users):
+        if a.triage:
+            if n >= len(all_users) - 1:
+                next_user = all_users[0]
+            else:
+                next_user = all_users[n + 1]
     return hub.aio.http.json_response({
         'triage': user.name,
-        'date': user.date.strftime('%A, %B %d, %Y')
+        'date': user.date.strftime('%A, %B %d, %Y'),
+        'next_user': next_user.name,
     })
 
 
