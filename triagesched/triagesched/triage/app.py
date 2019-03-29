@@ -7,7 +7,7 @@ class Triage(object):
 
     def get(self):
         user = __user__.query.filter_by(triage=True).first()
-        users = __user__.query.filter_by(enabled=1).order_by(__user__.order).all()
+        users = __user__.query.filter_by(enabled=True).order_by(__user__.order).all()
         if not user:
             user = __user__.query.order_by(__user__.order).first()
             user.triage = True
